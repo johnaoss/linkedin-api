@@ -2,6 +2,8 @@
 
 This project functions as a Go wrapper for Linkedin's REST API. It currently services only the non-partnered content as I have not recieved word in regards to my Developer Partner application yet.
 
+It was created to further ease the development of my other side project, [YASP](https://github.com/johnaoss/yasp)
+
 This currently only supports GET requests, and soon to be POST requests.
 
 ## Installation
