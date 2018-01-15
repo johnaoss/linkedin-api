@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -113,7 +112,6 @@ func parseJSON(s string) (*LinkedinProfile, error) {
 	bytes := bytes.NewBuffer([]byte(s))
 	err := json.NewDecoder(bytes).Decode(linkedinProfile)
 	if err != nil {
-		log.Printf(err.Error())
 		return nil, err
 	}
 	return linkedinProfile, nil
