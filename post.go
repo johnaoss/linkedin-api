@@ -1,6 +1,14 @@
 package golinkedinapi
 
-import "net/url"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+
+	"golang.org/x/oauth2"
+)
 
 // This is for POST requests to the Linkedin API.
 // That includes features such as...
@@ -8,24 +16,29 @@ import "net/url"
 // * Manage Company Pages
 // * Other Partner Features...(TBD if possible)
 
+const (
+	postURL = "https://api.linkedin.com/v1/people/~/shares?format=json"
+)
+
 // Post represents a post that one shares on a Linkedin profile,
 // not a POST request. To validate posts, call isValidPost() on one.
 type Post struct {
-	Content    ContentStruct    `json:"content"`
+	Content    ContentStruct    `json:"content,omitempty"`
 	Comment    string           `json:"comment"`
 	Visibility VisibilityStruct `json:"visibility"`
 }
 
 // ContentStruct represents a collection of fields describing the shared content.
 type ContentStruct struct {
-	Title             string `json:"title"`
-	Description       string `json:"description"`
-	SubmittedURL      string `json:"sumbitted-url"`
-	SubmittedImageURL string `json:"submitted-image-url"`
+	Title             string `json:"title,omitempty"`
+	Description       string `json:"description,omitempty"`
+	SubmittedURL      string `json:"sumbitted-url,omitempty"`
+	SubmittedImageURL string `json:"submitted-image-url,omitempty"`
 }
 
 // VisibilityStruct represents the visibility information about the shared post.
 type VisibilityStruct struct {
+	// Code is the only field specified in the documentation.
 	Code string `json:"code"`
 }
 
@@ -51,4 +64,43 @@ func isValidPost(post *Post) bool {
 		return false
 	}
 	return false
+}
+
+// postToJSON converts a post struct into a JSON object in order to send to
+// the API's endpoint.
+func postToJSON(post *Post) []byte {
+	data, err := json.Marshal(post)
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+// SharePost is the primary method of sharing a post.
+func SharePost(post *Post, w http.ResponseWriter, r *http.Request) (*http.Response, error) {
+	if validState(r) == false {
+		err := fmt.Errorf("state comparison failed")
+		return &http.Response{}, err
+	}
+	// Authenticate
+	params := r.URL.Query()
+	tok, err := authConf.Exchange(oauth2.NoContext, params.Get("code"))
+	if err != nil {
+		return &http.Response{}, err
+	}
+	client := authConf.Client(oauth2.NoContext, tok)
+	// Upload Data
+	data := postToJSON(post)
+	resp, err := client.Post(postURL, "application/json", bytes.NewReader(data))
+	if err != nil {
+		return &http.Response{}, err
+	}
+	if resp.StatusCode == 400 {
+		err = fmt.Errorf("cannot post duplicate content")
+	}
+	if resp.StatusCode == 201 {
+		return resp, nil
+	}
+	err = fmt.Errorf("post unsuccessful, response given: %v", resp)
+	return &http.Response{}, err
 }
