@@ -1,6 +1,7 @@
 package golinkedinapi
 
 import (
+	"io/ioutil"
 	"reflect"
 	"testing"
 )
@@ -8,6 +9,10 @@ import (
 func TestParseJSON(t *testing.T) {
 	badData := []string{"This is not JSON", "{{}", "{no}", "{name: \"lol\"}"}
 	goodData := []string{"{}", "{\"first_name\": \"John\"}"}
+	exampleResponse, err := ioutil.ReadFile("exampleresponse.json")
+	if err != nil {
+		t.Errorf("Could not find exampleresponse.json")
+	}
 	goodDataResponses := []*LinkedinProfile{&LinkedinProfile{}, &LinkedinProfile{FirstName: "John"}}
 	for _, elem := range badData {
 		get, err := parseJSON(elem)
@@ -23,6 +28,11 @@ func TestParseJSON(t *testing.T) {
 		if !reflect.DeepEqual(goodDataResponses[num], get) {
 			t.Errorf("ParseJSON errored, wanted %v, given %v", goodDataResponses[num], get)
 		}
+	}
+
+	_, err = parseJSON(string(exampleResponse))
+	if err != nil {
+		t.Errorf("ParseJSON threw an error on a valid response, given: %s\n:", err.Error())
 	}
 }
 

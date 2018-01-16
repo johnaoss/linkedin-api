@@ -153,21 +153,18 @@ func getSessionValue(f interface{}) string {
 
 // GetLoginURL provides a state-specific login URL for the user to login to.
 // CAUTION: This must be called before GetProfileData() as this enforces state.
-func GetLoginURL(w http.ResponseWriter, r *http.Request) (string, error) {
+func GetLoginURL(w http.ResponseWriter, r *http.Request) string {
 	state := generateState()
-	session, err := store.Get(r, "linkedin_API")
-	if err != nil {
-		return "", nil
-	}
+	session, _ := store.Get(r, "golinkedinapi")
 	session.Values["state"] = state
 	defer session.Save(r, w)
-	return authConf.AuthCodeURL(state), nil
+	return authConf.AuthCodeURL(state)
 }
 
 // GetProfileData gather's the user's Linkedin profile data and returns it as a pointer to a LinkedinProfile struct.
 // CAUTION: GetLoginURL must be called before this, as GetProfileData() has a state check.
 func GetProfileData(w http.ResponseWriter, r *http.Request) (*LinkedinProfile, error) {
-	session, err := store.Get(r, "linkedin_API")
+	session, err := store.Get(r, "golinkedinapi")
 	if err != nil {
 		return &LinkedinProfile{}, err
 	}
@@ -197,8 +194,7 @@ func GetProfileData(w http.ResponseWriter, r *http.Request) (*LinkedinProfile, e
 // InitConfig initializes the config needed by the client.
 // permissions is a string of all scopes desired by the user.
 func InitConfig(permissions []string, clientID string, clientSecret string, redirectURL string) {
-	var isEmail bool
-	var isBasic bool
+	var isEmail, isBasic bool
 	if permissions == nil {
 		panic(fmt.Errorf("You must specify some scope to request"))
 	}
@@ -230,3 +226,5 @@ func InitConfig(permissions []string, clientID string, clientSecret string, redi
 		requestedURL = emailRequestURL
 	}
 }
+
+// TODO: Config Struct

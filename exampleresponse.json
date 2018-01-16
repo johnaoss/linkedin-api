@@ -1,0 +1,61 @@
+{
+    "emailAddress": "user@example.com",
+    "firstName": "John",
+    "headline": "Software Developer at Pied Piper. Enjoys good UX, Toblerones and long dinners on the beach.",
+    "id": "rAnDoMtExT",
+    "industry": "Computer Software",
+    "lastName": "Doe",
+    "pictureUrl": "https://placem.at/people?w=300,h=300",
+    "positions": {
+        "_total": 3,
+        "values": [
+            {
+                "company": {
+                    "id": 1,
+                    "industry": "Computer Software",
+                    "name": "Pied Piper",
+                    "size": "1-10",
+                    "type": "Privately Held"
+                },
+                "id": 2,
+                "isCurrent": true,
+                "startDate": {
+                    "month": 9,
+                    "year": 2017
+                },
+                "summary": "Architected the revolutionary encryption algorithm that Pied Piper now markets as their primary product. This led to Pied Piper's $100000000000USD valuation at YCombinator 20XX.",
+                "title": "Lead Software Engineer"
+            },
+            {
+                "company": {
+                    "id": 500513,
+                    "industry": "Computer Software",
+                    "name": "Google",
+                    "size": "1001-5000",
+                    "type": "GOOG"
+                },
+                "id": 500513,
+                "isCurrent": true,
+                "startDate": {
+                    "month": 4,
+                    "year": 2014
+                },
+                "summary": "Develops and deploys innovative and disruptive products in emerging markets accross the flat earth, leading to a 50% reduction of downtime.",
+                "title": "DevOps Consultant"
+            },
+            {
+                "company": {
+                    "name": "University Board Game Club"
+                },
+                "id": 101,
+                "isCurrent": true,
+                "startDate": {
+                    "month": 2,
+                    "year": 2012
+                },
+                "summary": "Weaves intricate stories of imaginary worlds to incite a feeling of wonder and excitement in participants.",
+                "title": "Dungeon Master"
+            }
+        ]
+    }
+}

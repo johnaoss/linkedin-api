@@ -1,10 +1,16 @@
 package golinkedinapi_test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
+	"github.com/gorilla/mux"
 	api "github.com/johnaoss/golinkedinapi"
 )
+
+const port = ":5000"
 
 func TestInitConfig(t *testing.T) {
 	emailPermissions := []string{"r_emailaddress"}
@@ -18,6 +24,7 @@ func TestInitConfig(t *testing.T) {
 	// Invalid attempts
 	tryConfigPanic(t, emailPermissions, dummyID, dummySecret, invalidURL)
 	tryConfigPanic(t, invalidPermissions, dummyID, dummySecret, validURL)
+	tryConfigPanic(t, nil, dummyID, dummySecret, validURL)
 
 	// Valid attempts
 	api.InitConfig(emailPermissions, dummyID, dummySecret, validURL)
@@ -37,4 +44,36 @@ func tryConfigPanic(t *testing.T, p []string, id string, secret string, url stri
 		}
 	}()
 	api.InitConfig(p, id, secret, url)
+}
+
+func TestGetLoginURL(t *testing.T) {
+	go initRouter()
+	fullPermissions := []string{"r_emailaddress", "r_basicprofile"}
+	dummyID, dummySecret := "yes", "no"
+	validURL := "https://example.com/auth"
+	api.InitConfig(fullPermissions, dummyID, dummySecret, validURL)
+	resp, err := http.Get("http://localhost:5000")
+	if err != nil {
+		t.Errorf("Could not get LoginURL, given %s", err.Error())
+	}
+	url, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Could not read response of LoginURL, given %s", err.Error())
+	}
+	fmt.Println(url)
+
+}
+
+// Initializes a router for testing purposes.
+func initRouter() {
+	router := mux.NewRouter()
+	router.HandleFunc("/", loginHandler)
+	http.Handle("/", router)
+	http.ListenAndServe(port, router)
+}
+
+// Handles a route for getLoginURL()
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	login := api.GetLoginURL(w, r)
+	w.Write([]byte(login))
 }
