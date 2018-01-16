@@ -17,7 +17,6 @@ import (
 const (
 	fullRequestURL  = "https://api.linkedin.com/v1/people/~:(id,first-name,email-address,last-name,headline,picture-url,industry,summary,specialties,positions:(id,title,summary,start-date,end-date,is-current,company:(id,name,type,size,industry,ticker)),educations:(id,school-name,field-of-study,start-date,end-date,degree,activities,notes),associations,interests,num-recommenders,date-of-birth,publications:(id,title,publisher:(name),authors:(id,name),date,url,summary),patents:(id,title,summary,number,status:(id,name),office:(name),inventors:(id,name),date,url),languages:(id,language:(name),proficiency:(level,name)),skills:(id,skill:(name)),certifications:(id,name,authority:(name),number,start-date,end-date),courses:(id,name,number),recommendations-received:(id,recommendation-type,recommendation-text,recommender),honors-awards,three-current-positions,three-past-positions,volunteer)?format=json"
 	basicRequestURL = "https://api.linkedin.com/v1/people/~:(id,first-name,last-name,headline,picture-url,industry,summary,specialties,positions:(id,title,summary,start-date,end-date,is-current,company:(id,name,type,size,industry,ticker)),educations:(id,school-name,field-of-study,start-date,end-date,degree,activities,notes),associations,interests,num-recommenders,date-of-birth,publications:(id,title,publisher:(name),authors:(id,name),date,url,summary),patents:(id,title,summary,number,status:(id,name),office:(name),inventors:(id,name),date,url),languages:(id,language:(name),proficiency:(level,name)),skills:(id,skill:(name)),certifications:(id,name,authority:(name),number,start-date,end-date),courses:(id,name,number),recommendations-received:(id,recommendation-type,recommendation-text,recommender),honors-awards,three-current-positions,three-past-positions,volunteer)?format=json"
-	emailRequestURL = "https://api.linkedin.com/v1/people/~:(email-address)?format=json"
 )
 
 var (
@@ -151,10 +150,25 @@ func getSessionValue(f interface{}) string {
 	return ""
 }
 
+// validState validates the state stored client-side with the request's state,
+// it returns false if the states are not equal to each other.
+func validState(r *http.Request) bool {
+	// Retrieve state
+	session, _ := store.Get(r, "golinkedinapi")
+	// Compare state to header's state
+	retrievedState := session.Values["state"]
+	if getSessionValue(retrievedState) != r.Header.Get("state") {
+		return false
+	}
+	return true
+}
+
 // GetLoginURL provides a state-specific login URL for the user to login to.
 // CAUTION: This must be called before GetProfileData() as this enforces state.
 func GetLoginURL(w http.ResponseWriter, r *http.Request) string {
 	state := generateState()
+	// The only time this will error out is if the session cannot be decoded, however
+	// we don't care about that as we can simply change state.
 	session, _ := store.Get(r, "golinkedinapi")
 	session.Values["state"] = state
 	defer session.Save(r, w)
@@ -164,24 +178,23 @@ func GetLoginURL(w http.ResponseWriter, r *http.Request) string {
 // GetProfileData gather's the user's Linkedin profile data and returns it as a pointer to a LinkedinProfile struct.
 // CAUTION: GetLoginURL must be called before this, as GetProfileData() has a state check.
 func GetProfileData(w http.ResponseWriter, r *http.Request) (*LinkedinProfile, error) {
-	session, err := store.Get(r, "golinkedinapi")
-	if err != nil {
-		return &LinkedinProfile{}, err
-	}
-	retrievedState := session.Values["state"]
-	if getSessionValue(retrievedState) != r.Header.Get("state") {
+	if validState(r) == false {
+		err := fmt.Errorf("State comparison failed")
 		return &LinkedinProfile{}, err
 	}
 	params := r.URL.Query()
+	// Authenticate
 	tok, err := authConf.Exchange(oauth2.NoContext, params.Get("code"))
 	if err != nil {
 		return &LinkedinProfile{}, err
 	}
 	client := authConf.Client(oauth2.NoContext, tok)
+	// Retrieve data
 	resp, err := client.Get(fullRequestURL)
 	if err != nil {
 		return &LinkedinProfile{}, err
 	}
+	// Store data to struct and return.
 	data, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	formattedData, err := parseJSON(string(data))
@@ -222,8 +235,6 @@ func InitConfig(permissions []string, clientID string, clientSecret string, redi
 		requestedURL = fullRequestURL
 	} else if isBasic {
 		requestedURL = basicRequestURL
-	} else {
-		requestedURL = emailRequestURL
 	}
 }
 

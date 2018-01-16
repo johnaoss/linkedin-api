@@ -2,6 +2,7 @@ package golinkedinapi
 
 import (
 	"io/ioutil"
+	"net/http"
 	"reflect"
 	"testing"
 )
@@ -55,4 +56,20 @@ func TestGenerateState(t *testing.T) {
 	if reflect.TypeOf(s).Name() != "string" {
 		t.Errorf("GenerateState needed to return string, instead got %s\n", reflect.TypeOf(s).Name())
 	}
+}
+
+func TestValidState(t *testing.T) {
+	// Test empty state comparison
+	request := new(http.Request)
+	get := validState(request)
+	if get == false {
+		t.Errorf("validState should have returned true, instead got %v\n", get)
+	}
+	session, _ := store.Get(request, "golinkedinapi")
+	session.Values["state"] = "Example bad state"
+	get = validState(request)
+	if get != false {
+		t.Errorf("validState should have returned false, instead got %v\n", get)
+	}
+
 }
