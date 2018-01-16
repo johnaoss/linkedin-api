@@ -88,22 +88,37 @@ type Location struct {
 
 // Position represents a job held by the authorized user.
 type Position struct {
-	ID        string
-	Title     string
-	Summary   string
+	// ID represents a unique ID representing the position
+	ID string
+	// Title represents a user's position's title, for example Jeff Bezos's title would be 'CEO'
+	Title string
+	// Summary represents a short description of the user's position.
+	Summary string
+	// StartDate represents when the user's position started.
 	StartDate string
-	EndDate   string
+	// EndDate represents the user's position's end date, if any.
+	EndDate string
+	// IsCurrent represents if the position is currently held or not.
+	// If this is false, EndDate will not be returned, and will therefore equal ""
 	IsCurrent bool
-	Company   Company
+	// Company represents the Company where the user is employed.
+	Company PositionCompany
 }
 
-// Company represents the company of a job held by the authorized user.
-type Company struct {
-	ID       string
-	Name     string
-	Type     string
+// PositionCompany represents a company that is described within a user's Profile.
+// This is different from Company, which fully represents a company's data.
+type PositionCompany struct {
+	// ID represents a unique ID representing the company
+	ID string
+	// Name represents the name of the company
+	Name string
+	// Type represents the type of the company, either 'public' or 'private'
+	Type string
+	// Industry represents which industry the company is in.
 	Industry string
-	Ticker   string
+	// Ticker represents the stock market ticker symbol of the company.
+	// This will be blank if the company is privately held.
+	Ticker string
 }
 
 // ParseJSON converts a JSON string to a pointer to a LinkedinProfile.
@@ -184,6 +199,9 @@ func GetProfileData(w http.ResponseWriter, r *http.Request) (*LinkedinProfile, e
 func InitConfig(permissions []string, clientID string, clientSecret string, redirectURL string) {
 	var isEmail bool
 	var isBasic bool
+	if permissions == nil {
+		panic(fmt.Errorf("You must specify some scope to request"))
+	}
 	for _, elem := range permissions {
 		if elem == "r_emailaddress" {
 			isEmail = true
@@ -206,7 +224,7 @@ func InitConfig(permissions []string, clientID string, clientSecret string, redi
 	}
 	if isEmail && isBasic {
 		requestedURL = fullRequestURL
-	} else if isBasic && !isEmail {
+	} else if isBasic {
 		requestedURL = basicRequestURL
 	} else {
 		requestedURL = emailRequestURL
