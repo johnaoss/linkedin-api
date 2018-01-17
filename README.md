@@ -59,6 +59,23 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+### Sharing a comment (UNTESTED)
+
+```go
+import api "github.com/johnaoss/golinkedinapi"
+
+func sharePost(w http.ResponseWriter, r *http.Request) {
+    vis := VisibilityStruct{Code: "anyone"}
+    post := &api.Post{Visibility: vis, Comment: "This is a comment"}
+    resp, err := api.SharePost(post,w,r)
+    if err != nil {
+        w.Write([]byte("Something went wrong!"))
+    } else {
+        w.Write([]byte("Your post was successfully shared!"))
+    }
+}
+```
+
 ## Contact Me
 
 If there are any bugs please feel free to get in touch with either an issue or an e-mail!
