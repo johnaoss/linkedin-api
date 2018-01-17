@@ -39,6 +39,7 @@ type ContentStruct struct {
 // VisibilityStruct represents the visibility information about the shared post.
 type VisibilityStruct struct {
 	// Code is the only field specified in the documentation.
+	// must be either "anyone" or "connections-only"
 	Code string `json:"code"`
 }
 
@@ -55,15 +56,19 @@ func isValidPost(post *Post) bool {
 		return false
 	}
 	// Check if URLs are FQDN
-	_, err := url.Parse(post.Content.SubmittedURL)
-	if err != nil {
-		return false
+	if post.Content.SubmittedURL != "" {
+		_, err := url.ParseRequestURI(post.Content.SubmittedURL)
+		if err != nil {
+			return false
+		}
 	}
-	_, err = url.Parse(post.Content.SubmittedImageURL)
-	if err != nil {
-		return false
+	if post.Content.SubmittedImageURL != "" {
+		_, err := url.ParseRequestURI(post.Content.SubmittedImageURL)
+		if err != nil {
+			return false
+		}
 	}
-	return false
+	return true
 }
 
 // postToJSON converts a post struct into a JSON object in order to send to
