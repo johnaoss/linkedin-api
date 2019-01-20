@@ -1,4 +1,4 @@
-# GoLinkedinAPI
+# GoLinkedinAPI [![GoDoc](https://godoc.org/github.com/johnaoss/golinkedinapi?status.svg)](https://godoc.org/github.com/johnaoss/golinkedinapi)
 
 This project functions as a Go wrapper for Linkedin's REST API. It currently services only the non-partnered content as I have not recieved word in regards to my Developer Partner application yet.
 
