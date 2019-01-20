@@ -1,6 +1,6 @@
 # GoLinkedinAPI [![GoDoc](https://godoc.org/github.com/johnaoss/golinkedinapi?status.svg)](https://godoc.org/github.com/johnaoss/golinkedinapi)
 
-This project functions as a Go wrapper for Linkedin's REST API. It currently services only the non-partnered content as I have not recieved word in regards to my Developer Partner application yet.
+This project functions as a pure Go interface for Linkedin's REST API. Currently, this provides a lightweight, documented interface to get a user's posts & profile data into a native marshallable Go struct. Requests are made secure by using OAuth2.0 authenticated requests to LinkedIn's servers.
 
 This was my first project written in Go, and so I'd love to hear your thoughts!
 
@@ -76,9 +76,9 @@ func sharePost(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## Contact Me
+## Limitations
 
-If there are any bugs please feel free to get in touch with either an issue or an e-mail!
+This currently services only the non-partnered content as LinkedIn does not have any means of open-source developers to reliably acquire this data. Aside from that, if there are any bugs please feel free to get in touch with either an issue or an e-mail!
 
 ## TODO
 
