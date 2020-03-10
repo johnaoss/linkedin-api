@@ -1,4 +1,4 @@
-# linkedin-api [![GoDoc](https://godoc.org/github.com/johnaoss/linkedin-api?status.svg)](https://pkg.go.dev/linkedin-api.com/johnaoss/golinkedinapi)
+# linkedin-api [![GoDoc](https://godoc.org/github.com/johnaoss/linkedin-api?status.svg)](https://pkg.go.dev/github.com/johnaoss/linkedin-api)
 
 This project functions as a pure Go interface for Linkedin's v1 REST API. Currently, this provides a lightweight, documented interface to get a user's posts & profile data into a native marshallable Go struct. Requests are made secure by using OAuth2.0 authenticated requests to LinkedIn's servers.
 
