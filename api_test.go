@@ -1,13 +1,12 @@
-package golinkedinapi_test
+package linkedin_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
 	"github.com/gorilla/mux"
-	api "github.com/johnaoss/golinkedinapi"
+	api "github.com/johnaoss/linkedin-api"
 )
 
 const port = ":5000"
@@ -60,8 +59,8 @@ func TestGetLoginURL(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not read response of LoginURL, given %s", err.Error())
 	}
-	fmt.Println(url)
 
+	t.Log(url)
 }
 
 // Initializes a router for testing purposes.

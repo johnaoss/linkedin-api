@@ -1,7 +1,8 @@
-package golinkedinapi
+package linkedin
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
@@ -74,12 +75,14 @@ type LinkedinProfile struct {
 }
 
 // Positions represents the result given by json:"positions"
+// TODO: Proper tags
 type Positions struct {
 	total  int
 	values []Position
 }
 
 // Location specifies the users location
+// TODO: Proper tags
 type Location struct {
 	UserLocation string
 	CountryCode  string
@@ -157,10 +160,7 @@ func validState(r *http.Request) bool {
 	session, _ := store.Get(r, "golinkedinapi")
 	// Compare state to header's state
 	retrievedState := session.Values["state"]
-	if getSessionValue(retrievedState) != r.Header.Get("state") {
-		return false
-	}
-	return true
+	return getSessionValue(retrievedState) == r.Header.Get("state")
 }
 
 // GetLoginURL provides a state-specific login URL for the user to login to.
@@ -178,17 +178,16 @@ func GetLoginURL(w http.ResponseWriter, r *http.Request) string {
 // GetProfileData gather's the user's Linkedin profile data and returns it as a pointer to a LinkedinProfile struct.
 // CAUTION: GetLoginURL must be called before this, as GetProfileData() has a state check.
 func GetProfileData(w http.ResponseWriter, r *http.Request) (*LinkedinProfile, error) {
-	if validState(r) == false {
-		err := fmt.Errorf("State comparison failed")
-		return &LinkedinProfile{}, err
+	if !validState(r) {
+		return &LinkedinProfile{}, fmt.Errorf("State comparison failed")
 	}
 	params := r.URL.Query()
 	// Authenticate
-	tok, err := authConf.Exchange(oauth2.NoContext, params.Get("code"))
+	tok, err := authConf.Exchange(context.Background(), params.Get("code"))
 	if err != nil {
 		return &LinkedinProfile{}, err
 	}
-	client := authConf.Client(oauth2.NoContext, tok)
+	client := authConf.Client(context.Background(), tok)
 	// Retrieve data
 	resp, err := client.Get(fullRequestURL)
 	if err != nil {
@@ -217,7 +216,7 @@ func InitConfig(permissions []string, clientID string, clientSecret string, redi
 		} else if elem == "r_basicprofile" {
 			isBasic = true
 		}
-		if validPermissions[elem] != true {
+		if !validPermissions[elem] {
 			panic(fmt.Errorf("All elements of permissions must be valid Linkedin permissions as specified in the API docs"))
 		}
 	}

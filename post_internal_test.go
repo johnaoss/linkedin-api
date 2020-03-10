@@ -1,56 +1,97 @@
-package golinkedinapi
+package linkedin
 
 import (
 	"crypto/rand"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // TODO: Automate this
 
-var (
-	vis                 = VisibilityStruct{Code: "anyone"}
-	comment             = "This is a comment"
-	longTitle           = generateText(201)
-	longDescription     = generateText(257)
-	longComment         = generateText(701)
-	validURL            = "https://google.com"
-	invalidURL          = "This isn't a URL"
-	basicContent        = ContentStruct{Title: "A Title"}
-	emptyPost           = &Post{}
-	basicPost           = &Post{Visibility: vis, Comment: comment}
-	invalidPostTitle    = &Post{Visibility: vis, Comment: comment, Content: ContentStruct{Title: longTitle}}
-	invalidPostDesc     = &Post{Visibility: vis, Comment: comment, Content: ContentStruct{Description: longDescription}}
-	invalidPostComment  = &Post{Visibility: vis, Comment: longComment}
-	invalidSubmittedURL = &Post{Visibility: vis, Comment: comment, Content: ContentStruct{SubmittedURL: invalidURL}}
-	invalidImageURL     = &Post{Visibility: vis, Comment: comment, Content: ContentStruct{SubmittedImageURL: invalidURL}}
-)
-
 // generateText is a helper to generate descriptions over the char limit
-// for use in testing IsValidPost()
-func generateText(width int) string {
+// for use in testing Post.Validate()
+func generateText(t *testing.T, width int) string {
+	t.Helper()
+
 	b := make([]byte, width)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		t.Fatalf("failed to read from random: %v", err)
+	}
 	return string(b)
 }
 
-func TestIsValidPost(t *testing.T) {
-	assert := assert.New(t)
-	assert.Equal(false, isValidPost(emptyPost))
-	assert.Equal(true, isValidPost(basicPost))
-	assert.NotEqual(false, isValidPost(basicPost))
-	assert.Equal(false, isValidPost(invalidPostTitle))
-	assert.Equal(false, isValidPost(invalidPostDesc))
-	assert.Equal(false, isValidPost(invalidPostComment))
-	assert.Equal(false, isValidPost(invalidImageURL))
-	assert.Equal(false, isValidPost(invalidSubmittedURL))
-}
+func TestPost_Validate(t *testing.T) {
+	vis := Visibility{Code: "anyone"}
+	comment := "This is a comment"
 
-func TestPostToJSON(t *testing.T) {
-	assert := assert.New(t)
-
-	assert.NotEqual(nil, postToJSON(emptyPost))
-	assert.NotEqual(nil, postToJSON(basicPost))
-	// Figure out how to make json.Marshal(post) error out
+	testcases := []struct {
+		name    string
+		post    *Post
+		wantErr bool
+	}{
+		{
+			name:    "Empty",
+			post:    &Post{},
+			wantErr: true,
+		},
+		{
+			name: "Basic",
+			post: &Post{
+				Visibility: vis,
+				Comment:    comment,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid title",
+			post: &Post{
+				Visibility: vis,
+				Comment:    comment,
+				Content:    Content{Title: generateText(t, 201)},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid description",
+			post: &Post{
+				Visibility: vis,
+				Comment:    comment,
+				Content:    Content{Description: generateText(t, 257)},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid comment",
+			post: &Post{
+				Visibility: vis,
+				Comment:    generateText(t, 701),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid submitted url",
+			post: &Post{
+				Visibility: vis,
+				Comment:    comment,
+				Content:    Content{SubmittedURL: "This isn't a URL"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid submitted image url",
+			post: &Post{
+				Visibility: vis,
+				Comment:    comment,
+				Content:    Content{SubmittedImageURL: "Neither is this"},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.post.Validate()
+			if (err != nil) != tc.wantErr {
+				t.Errorf("should error is %t, did err = %t", tc.wantErr, err != nil)
+			}
+		})
+	}
 }

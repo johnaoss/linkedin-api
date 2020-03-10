@@ -1,4 +1,4 @@
-package golinkedinapi
+package linkedin
 
 import (
 	"io/ioutil"
@@ -53,23 +53,24 @@ func TestGetSessionValue(t *testing.T) {
 
 func TestGenerateState(t *testing.T) {
 	s := generateState()
-	if reflect.TypeOf(s).Name() != "string" {
-		t.Errorf("GenerateState needed to return string, instead got %s\n", reflect.TypeOf(s).Name())
+	if len(s) != 32 {
+		t.Errorf("Returned improper size")
 	}
 }
 
 func TestValidState(t *testing.T) {
 	// Test empty state comparison
 	request := new(http.Request)
-	get := validState(request)
-	if get == false {
-		t.Errorf("validState should have returned true, instead got %v\n", get)
-	}
-	session, _ := store.Get(request, "golinkedinapi")
-	session.Values["state"] = "Example bad state"
-	get = validState(request)
-	if get != false {
-		t.Errorf("validState should have returned false, instead got %v\n", get)
+	if ok := validState(request); !ok {
+		t.Errorf("validState should have returned true, instead got %t", ok)
 	}
 
+	session, err := store.Get(request, "golinkedinapi")
+	if err != nil {
+		t.Errorf("received error while receiving state: %v", err)
+	}
+	session.Values["state"] = "Example bad state"
+	if ok := validState(request); ok {
+		t.Errorf("validState should have returned false, instead got %t", ok)
+	}
 }

@@ -1,15 +1,17 @@
-# GoLinkedinAPI [![GoDoc](https://godoc.org/github.com/johnaoss/golinkedinapi?status.svg)](https://godoc.org/github.com/johnaoss/golinkedinapi)
+# linkedin-api [![GoDoc](https://godoc.org/github.com/johnaoss/linkedin-api?status.svg)](https://pkg.go.dev/github.com/johnaoss/linkedin-api)
 
 This project functions as a pure Go interface for Linkedin's REST API. Currently, this provides a lightweight, documented interface to get a user's posts & profile data into a native marshallable Go struct. Requests are made secure by using OAuth2.0 authenticated requests to LinkedIn's servers.
 
 This was my first project written in Go, and so I'd love to hear your thoughts!
+
+Since then, I've decided to update this in order to ensure that I haven't fully abandoned any projects.
 
 This currently only supports GET requests, and soon to be POST requests.
 
 ## Installation
 
 ```bash
-go get -t github.com/johnaoss/golinkedinapi
+go get -t github.com/johnaoss/linkedin-api
 ```
 
 That's it!
@@ -22,7 +24,7 @@ I haven't tested this with other routing packages, but this does indeed work for
 
 ```go
 
-import api "github.com/johnaoss/golinkedinapi"
+import api "github.com/johnaoss/linkedin-api"
 
 func main() {
     permissions := []string{"r_basicprofile"}
@@ -37,7 +39,7 @@ func main() {
 ### Getting a user's login url (includes state)
 
 ```go
-import api "github.com/johnaoss/golinkedinapi"
+import api "github.com/johnaoss/linkedin-api"
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
     login := api.GetLoginURL(w,r)
@@ -49,7 +51,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 ### Getting a user's data
 
 ```go
-import api "github.com/johnaoss/golinkedinapi"
+import api "github.com/johnaoss/linkedin-api"
 
 // this handles the authorized redirect URL as specified in the Linkedin developer console
 func authHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +64,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 ### Sharing a comment (UNTESTED)
 
 ```go
-import api "github.com/johnaoss/golinkedinapi"
+import api "github.com/johnaoss/linkedin-api"
 
 func sharePost(w http.ResponseWriter, r *http.Request) {
     vis := VisibilityStruct{Code: "anyone"}
