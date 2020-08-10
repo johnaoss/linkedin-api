@@ -1,10 +1,14 @@
 # linkedin-api [![GoDoc](https://godoc.org/github.com/johnaoss/linkedin-api?status.svg)](https://pkg.go.dev/github.com/johnaoss/linkedin-api)
 
+## *NOTE*: 
+
+**This package is for the V1 API which has been deprecated and is pending removal. I don't currently have any plans on supporting V2, although that may change in the future. Any V2 support would be a major breaking change, and as such the state of the API would be subject to massive change, as well as dropping V1 support.**
+
 This project functions as a pure Go interface for Linkedin's v1 REST API. Currently, this provides a lightweight, documented interface to get a user's posts & profile data into a native marshallable Go struct. Requests are made secure by using OAuth2.0 authenticated requests to LinkedIn's servers.
 
 This was my first project written in Go, and so I'd love to hear your thoughts!
 
-This currently only supports GET requests, and soon to be POST requests.
+This currently only supports GET requests. 
 
 ## Installation
 
@@ -79,6 +83,10 @@ func sharePost(w http.ResponseWriter, r *http.Request) {
 ## Limitations
 
 This currently services only the non-partnered content as LinkedIn does not have any means of open-source developers to reliably acquire this data. Aside from that, if there are any bugs please feel free to get in touch with either an issue or an e-mail!
+
+# License
+
+MIT Licensed, check the LICENSE.md file for more details. 
 
 ## TODO
 
